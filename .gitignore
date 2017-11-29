@@ -1,0 +1,15 @@
+*/**/.directory
+*/**/.Rhistory
+*/**/.RData
+*/**/*.png
+*/**/*.csv
+*/**/*.pdf
+*/**/*.mp4
+*/**/*.avi
+*/**/*.tif
+*/**/*.xls
+*/**/*.ods
+*/**/*~
+.RData
+.Rhistory
+.directory

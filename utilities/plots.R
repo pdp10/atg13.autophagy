@@ -34,7 +34,7 @@ library(gridExtra)
 library(Hmisc)
 library(scales)
 library(plyr)
-
+library(moments)
 
 
 
@@ -80,7 +80,7 @@ plot_correlation_main <- function(dfnt, points, xlab, ylab, filenameout) {
   
   g <- plot_correlation(time, 'time', ylab) + 
     labs(x=xlab, y=ylab)
-  ggsave(paste0(file_path_sans_ext(filenameout), "_corr.png"),
+  ggsave(paste0(filenameout, "_corr.png"),
          dpi=300,  width=8, height=6)
 }
 
@@ -207,16 +207,16 @@ comp_mean_error <- function(df, ylab, filenameout) {
     geom_line(aes(x=a, y=b), color="black", size=1.0) +
     labs(x="Time [s]", y=ylab) + 
     theme_basic()
-  ggsave(paste0(file_path_sans_ext(filenameout), "_sd.png"), dpi=300,  width=8, height=6)
+  ggsave(paste0(filenameout, "_sd.png"), dpi=300,  width=8, height=6)
   
   g <- g +     
     geom_errorbar(aes(ymin=b-d, ymax=b+d), colour="magenta") +
     geom_line(aes(x=a, y=b), color="black", size=1.0) + 
     theme_basic()
-  ggsave(paste0(file_path_sans_ext(filenameout), "_ci95.png"), dpi=300,  width=8, height=6)
+  ggsave(paste0(filenameout, "_ci95.png"), dpi=300,  width=8, height=6)
   
   colnames(statdf) <- c("time", "mean", "sd", "ci95")
-  write.table(statdf, file=paste0(file_path_sans_ext(filenameout), "_stats.csv"), sep=",", row.names=FALSE)  
+  write.table(statdf, file=paste0(filenameout, "_stats.csv"), sep=",", row.names=FALSE)  
 }
 
 

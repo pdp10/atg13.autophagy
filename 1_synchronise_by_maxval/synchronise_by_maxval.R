@@ -33,11 +33,11 @@ source('../utilities/plots.R')
 sync_tc_main <- function(location, csv.file, readout) {
   print(paste("Parsing", readout))
   
-  df <- read.table( paste0(location, csv.file), header=TRUE, na.strings="NA", dec=".", sep="," )
+  df <- read.table( paste0(location, csv.file, '.csv'), header=TRUE, na.strings="NA", dec=".", sep="," )
   # remove rows and columns containing only NA
   df <- df[colSums(!is.na(df)) > 0]
 
-  filenameout <- paste0(file_path_sans_ext(csv.file))
+  filenameout <- paste0(csv.file)
   # plot original time courses
   plot_original_tc(df, filenameout, readout)    
   # synchronise time courses
@@ -65,6 +65,6 @@ yaxis.label <- c('IntensityMean','IntensityMean')
 ################
 
 for(i in 1:length(filenames)) {
-  sync_tc_main(location, paste0(filenames[i], suffix), yaxis.label[i])
+  sync_tc_main(location, paste0(filenames[i]), yaxis.label[i])
 }
 

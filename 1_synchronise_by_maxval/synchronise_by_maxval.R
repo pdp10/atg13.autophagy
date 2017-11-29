@@ -27,58 +27,21 @@
 # synchronise time courses by maximum value
 
 
-#library(tools)
-
-# readxl does not require the crappy rJava dependency like xlsx.
-#library(readxl)
-#library(moments)
-
 source('../utilities/plots.R')
 
 
-
-sync_tc_main <- function(location, xlsxname.file, xlsxname.sheets) {
-  for (i in 1:length(xlsxname.sheets)) {
-    print(paste("Parsing", xlsxname.sheets[i]))
-    # read a sheet in the worksheet
-    # xlsx
-    #df <- read.xlsx(xlsxname.file, sheetName=xlsxname.sheets[i])
-    # readxl
-    df <- read_excel(paste0(location, xlsxname.file), sheet=xlsxname.sheets[i])
-    
-    #print(df)    
-    # remove rows and columns containing only NA
-    df <- df[colSums(!is.na(df)) > 0]
-    #df <- df[rowSums(!is.na(df)) > 0]    
-    #print(df)
-    
-    
-    # plot original time courses
-    filenameout <- paste0(file_path_sans_ext(xlsxname.file), "_", xlsxname.sheets[i])
-    
-    plot_original_tc(df, filenameout, xlsxname.sheets[i])    
-    
-    sync_tc_fun(df, filenameout, xlsxname.sheets[i])
-  }
-  
-}
-
-
-sync_tc_main_csv <- function(location, csv.file, readout) {
+sync_tc_main <- function(location, csv.file, readout) {
   print(paste("Parsing", readout))
   
-  df <- read.table( paste0(location, file.path(csv.file)), header=TRUE, na.strings="NA", dec=".", sep="," )
-  
+  df <- read.table( paste0(location, csv.file), header=TRUE, na.strings="NA", dec=".", sep="," )
   # remove rows and columns containing only NA
   df <- df[colSums(!is.na(df)) > 0]
-  #print(df)
-  
+
+  filenameout <- paste0(file_path_sans_ext(csv.file))
   # plot original time courses
-  filenameout <- paste0(file_path_sans_ext(csv.file), "_", readout)
-  
   plot_original_tc(df, filenameout, readout)    
-  
-  sync_tc_fun(df, filenameout, readout)
+  # synchronise time courses
+  sync_tc_fun(df, location, filenameout, readout)
 }
 
 
@@ -102,6 +65,6 @@ yaxis.label <- c('IntensityMean','IntensityMean')
 ################
 
 for(i in 1:length(filenames)) {
-  sync_tc_main_csv(location, paste0(filenames[i], suffix), yaxis.label[i])
+  sync_tc_main(location, paste0(filenames[i], suffix), yaxis.label[i])
 }
 

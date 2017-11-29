@@ -33,6 +33,14 @@ rm(list = ls())
 setwd('../')
 
 
+#2
+print('2_upper_lower_bound_analysis')
+setwd('2_upper_lower_bound_analysis')
+source('upper_lower_bound_analysis.R')
+rm(list = ls())
+setwd('../')
+
+
 #3
 print('3_time_courses_data_for_copasi')
 setwd('3_time_courses_data_for_copasi')
@@ -40,10 +48,3 @@ source('time_courses_data_for_copasi.R')
 rm(list = ls())
 setwd('../')
 
-
-#10
-print('10_exp_tc_distrib')
-setwd('10_exp_tc_distrib')
-source('exp_tc_distrib.R')
-rm(list = ls())
-setwd('../')

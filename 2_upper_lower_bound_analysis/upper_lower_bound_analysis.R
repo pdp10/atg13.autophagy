@@ -25,7 +25,7 @@
 
 
 
-# analyse the lower and upper bounds of the time courses
+# analyse the lower and upper values of the time courses
 
 
 library(ggplot2)
@@ -34,43 +34,15 @@ source('../utilities/plots.R')
 
 
 # return the upper values of the oscillations (the peaks)
-osc.hv <- function(vec, thres=0.5, ini.tp=0) {
-  vec <- vec[as.numeric(names(vec))>=ini.tp]
-  hv <- c()
-  prev <- 0
-  prev.prev <- 0
-  for(i in 1:length(vec)) {
-    # prev must be above a certain threshold
-    # prev must be gt than prev.prev and vec[i]
-    if(!is.na(prev.prev) & !is.na(prev) & !is.na(vec[i])) {
-      if(prev > thres & (vec[i] < prev & prev > prev.prev)) {
-        hv <- c(hv, prev)
-      }
-    }
-    prev.prev <- prev
-    prev <- vec[i]
-  }
-  return(hv)
+hv <- function(vec, thres=0.5, ini.tp=0) {
+  vec <- vec[!is.na(vec) & as.numeric(names(vec))>=ini.tp & vec>thres]
+  return(vec)
 }
 
 # return the lower values of the oscillations
-osc.lv <- function(vec, thres=0.5, ini.tp=0) {
-  vec <- vec[as.numeric(names(vec))>=ini.tp]
-  lv <- c()
-  prev <- 0
-  prev.prev <- 0
-  for(i in 1:length(vec)) {
-    # prev must be below a certain threshold
-    # prev must be lt than prev.prev and vec[i]
-    if(!is.na(prev.prev) & !is.na(prev) & !is.na(vec[i])) {
-      if(prev < thres & vec[i] > prev & prev < prev.prev) {
-        lv <- c(lv, prev)
-      }
-    }
-    prev.prev <- prev
-    prev <- vec[i]
-  }
-  return(lv)
+lv <- function(vec, thres=0.5, ini.tp=0) {
+  vec <- vec[!is.na(vec) & as.numeric(names(vec))>=ini.tp & vec<thres]
+  return(vec)  
 }
 
 
@@ -83,90 +55,91 @@ suffix <- '.csv'
 location <- '../data/'
 filenames <- c('atg13_int_mean_ctrl_sync', 'atg13_int_mean_wrtm_sync')
 
-data <- read.table( paste0(location, filename, suffix), header=TRUE, na.strings="NA", dec=".", sep=",", row.names=1)
-
-
 
 
 ####################
 # Extract the delays
 ####################
 
-# we manually extracted thresholds for each time course. These are used to determine the highest and lowest values of 
-# the oscillations.
-print(colnames(data))
-#thres.hv <- c(1500,1500,1500,1500,1500,1400,1500,1500,2500,1700,1500,1600,1600,1700,1400,1300,1200)
-#thres.lv <- c(1300,1300,1300,1400,1400,1100,1200,1200,1500,1500,1200,1500,1500,1400,1200,1200,1100)
+# thresholds. [1] ctrl, [2] wrtm
+thres.hv <- c(2000,1200)
+thres.lv <- c(1000,1000)
 
-thres.hv <- c(1500,1500,1500,1500,1500,1400,1500,1500,2500,1700,1500,1600,1600,1700,1400,1300,1200)
-thres.lv <- c(1300,1300,1300,1300,1300,1100,1200,1200,1300,1300,1200,1300,1300,1300,1200,1200,1100)
+for(i in 1:length(filenames)) {
 
-# EXTRACT THE UPPER VALUES (the peaks)
+  print(paste0('Processing ', location, filenames[i], suffix))
+  
+  # import the data
+  data <- read.table( paste0(location, filenames[i], suffix), header=TRUE, na.strings="NA", dec=".", sep=",", row.names=1)
 
-# extract the delays from the time courses
-data.plot.hv <- data.frame(time=numeric(0), val=numeric(0))
-for(i in 1:ncol(data)) {
- col.i <- data[,i]
- names(col.i) <- row.names(data)
- ## with min-max scaling
- #hv.i <- osc.hv(col.i, thres=0.50)
- ## without min-max scaling
- hv.i <- osc.hv(col.i, thres=thres.hv[i])
- hv.tc.i <- as.numeric(names(hv.i))
- data.plot.hv <- rbind(data.plot.hv, data.frame(time=hv.tc.i, val=hv.i))
+  # EXTRACT THE UPPER VALUES
+  
+  # extract the delays from the time courses
+  data.plot.hv <- data.frame(time=numeric(0), val=numeric(0))
+  for(j in 1:ncol(data)) {
+   col.j <- data[,j]
+   names(col.j) <- row.names(data)
+   hv.j <- hv(col.j, thres=thres.hv[i])
+   hv.tc.j <- as.numeric(names(hv.j))
+   data.plot.hv <- rbind(data.plot.hv, data.frame(time=hv.tc.j, val=hv.j))
+  }
+  data.plot.hv <- cbind(data.plot.hv, pos=rep('top', nrow(data.plot.hv)))
+  
+  # plot
+  g <- ggplot() + 
+    geom_point(data=data.plot.hv, aes(x=time, y=val)) +  
+    labs(title='Upper Values', x='Time [s]', y='Intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(paste0(filenames[i], '_upper_values.png'), width=4, height=3, dpi=300)
+  write.table(data.plot.hv, file=paste0(filenames[i], '_upper_values', suffix), row.names=FALSE, quote=FALSE, sep=',')
+  
+  # density plot
+  g <- ggplot(data.plot.hv, aes(x=val)) + 
+    geom_density(colour = "black", fill = "#56B4E9", alpha=0.5) +
+    labs(title='Density of upper values', x='signal intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(paste0(filenames[i], '_upper_values_density.png'), width=4, height=3, dpi=300)
+  
+  
+  ## --------- ## 
+  
+  
+  # EXTRACT THE LOWER VALUES
+  
+  # extract the delays from the time courses
+  data.plot.lv <- data.frame(time=numeric(0), val=numeric(0))
+  for(j in 1:ncol(data)) {
+    col.j <- data[,j]
+    names(col.j) <- row.names(data)
+    lv.j <- lv(col.j, thres=thres.lv[i])
+    lv.tc.j <- as.numeric(names(lv.j))
+    data.plot.lv <- rbind(data.plot.lv, data.frame(time=lv.tc.j, val=lv.j))
+  }
+  data.plot.lv <- cbind(data.plot.lv, pos=rep('bottom', nrow(data.plot.lv)))
+  
+  # plot
+  g <- ggplot() + 
+    geom_point(data=data.plot.lv, aes(x=time, y=val)) +  
+    labs(title='Lower values', x='Time [s]', y='Intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(paste0(filenames[i], '_lower_values.png'), width=4, height=3, dpi=300)
+  write.table(data.plot.lv, file=paste0(filenames[i], '_lower_values', suffix), row.names=FALSE, quote=FALSE, sep=',')
+  
+  # density plot
+  g <- ggplot(data.plot.lv, aes(x=val)) + 
+    geom_density(colour = "black", fill = "#56B4E9", alpha=0.5) +
+    labs(title='Density of lower values', x='signal intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(paste0(filenames[i], '_lower_values_density.png'), width=4, height=3, dpi=300)
+  
+  
+  # write the peaks stats
+  
+  peaks.stats <- data.frame(type=c('top', 'bottom'), mean=c(mean(data.plot.hv$val), mean(data.plot.lv$val)), 
+                            sd=c(sd(data.plot.hv$val), sd(data.plot.lv$val)))
+  write.table(peaks.stats, file=paste0(filenames[i], '_peaks_stats', suffix), row.names=FALSE, col.names=TRUE, quote=FALSE, sep=',')
+
+  
 }
-data.plot.hv <- cbind(data.plot.hv, pos=rep('top', nrow(data.plot.hv)))
-
-# plot
-g <- ggplot() + 
-  geom_point(data=data.plot.hv, aes(x=time, y=val)) +  
-  labs(title='Oscillation upper bounds', x='Time [s]', y='Intensity [a.u.]') +
-  theme_basic()
-ggsave(paste0(filename, '_upper_bounds.png'), width=4, height=3, dpi=300)
-write.table(data.plot.hv, file=paste0(filename, '_upper_bounds', suffix), row.names=FALSE, quote=FALSE, sep=',')
-
-# density plot
-g <- ggplot(data.plot.hv, aes(x=val)) + 
-  geom_density(colour = "black", fill = "#56B4E9", alpha=0.5) +
-  labs(title='Density of upper bounds', x='signal intensity [a.u.]') +
-  theme_basic()
-ggsave(paste0(filename, '_upper_bounds_density.png'), width=4, height=3, dpi=300)
 
 
-# EXTRACT THE LOWER VALUES (the lower peaks)
-
-# extract the delays from the time courses
-data.plot.lv <- data.frame(time=numeric(0), val=numeric(0))
-for(i in 1:ncol(data)) {
-  col.i <- data[,i]
-  names(col.i) <- row.names(data)
-  ## with min-max scaling
-  #lv.i <- osc.lv(col.i, thres=0.30)
-  ## without min-max scaling
-  lv.i <- osc.lv(col.i, thres=thres.lv[i])
-  lv.tc.i <- as.numeric(names(lv.i))
-  data.plot.lv <- rbind(data.plot.lv, data.frame(time=lv.tc.i, val=lv.i))
-}
-data.plot.lv <- cbind(data.plot.lv, pos=rep('bottom', nrow(data.plot.lv)))
-
-# plot
-g <- ggplot() + 
-  geom_point(data=data.plot.lv, aes(x=time, y=val)) +  
-  labs(title='Oscillation lower bounds', x='Time [s]', y='Intensity [a.u.]') +
-  theme_basic()
-ggsave(paste0(filename, '_lower_bounds.png'), width=4, height=3, dpi=300)
-write.table(data.plot.lv, file=paste0(filename, '_lower_bounds', suffix), row.names=FALSE, quote=FALSE, sep=',')
-
-# density plot
-g <- ggplot(data.plot.lv, aes(x=val)) + 
-  geom_density(colour = "black", fill = "#56B4E9", alpha=0.5) +
-  labs(title='Density of lower bounds', x='signal intensity [a.u.]') +
-  theme_basic()
-ggsave(paste0(filename, '_lower_bounds_density.png'), width=4, height=3, dpi=300)
-
-
-# write the peaks stats
-
-peaks.stats <- data.frame(type=c('top', 'bottom'), mean=c(mean(data.plot.hv$val), mean(data.plot.lv$val)), 
-                          sd=c(sd(data.plot.hv$val), sd(data.plot.lv$val)))
-write.table(peaks.stats, file=paste0(filename, '_peaks_stats', suffix), row.names=FALSE, col.names=TRUE, quote=FALSE, sep=',')

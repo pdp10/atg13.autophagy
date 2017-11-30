@@ -67,7 +67,7 @@ plot_correlation <- function(df, xlab, ylab) {
   g <- ggplot(df, aes_string(xlab, ylab)) +
     geom_point() +     # Use hollow circles
     geom_smooth(method=lm) +  # Add linear regression line (by default includes 95% confidence region)
-    ggtitle(paste0("R=", round(pcorr, digits = 3)))
+    ggtitle(paste0("R=", round(pcorr, digits = 3))) + theme_basic()
 }
 
 

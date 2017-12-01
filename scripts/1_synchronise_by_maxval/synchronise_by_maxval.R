@@ -27,23 +27,17 @@
 # synchronise time courses by maximum value
 
 
-source('../utilities/plots.R')
-
-
-sync_tc_main <- function(location, csv.file, readout) {
-  print(paste("Parsing", readout))
-  
-  df <- read.table( paste0(location, csv.file), header=TRUE, na.strings="NA", dec=".", sep="," )
-  # remove rows and columns containing only NA
-  df <- df[colSums(!is.na(df)) > 0]
-
-  filenameout <- paste0(file_path_sans_ext(csv.file))
-  # plot original time courses
-  plot_original_tc(df, filenameout, readout)    
-  # synchronise time courses
-  sync_tc_fun(df, location, filenameout, readout)
+# retrieve this script path 
+args <- commandArgs(trailingOnly=FALSE)
+SCRIPT_PATH <- dirname(sub("^--file=", "", args[grep("^--file=", args)]))
+if(length(SCRIPT_PATH) > 0) {
+  # we use this when Rscript is used from a different directory
+  SCRIPT_PATH <- normalizePath(SCRIPT_PATH)
+  source(file.path(SCRIPT_PATH, '../utilities/plots.R'))
+} else {
+  # we use this when Rscript is used from this directory
+  source('../utilities/plots.R')
 }
-
 
 
 
@@ -51,20 +45,22 @@ sync_tc_main <- function(location, csv.file, readout) {
 # LOAD DATA 
 ###########
 
-suffix <- '.csv'
-location <- '../data/'
-filenames <- c('atg13_int_mean_ctrl', 'atg13_int_mean_wrtm')
-yaxis.label <- c('IntensityMean','IntensityMean')
-
-# filenames <- c('atg13_int_mean_ctrl', 'atg13_int_mean_wrtm', 'atg1_int_sum_ctrl.csv', 'atg1_int_sum_wrtm.csv')
-# yaxis.label <- c('IntensityMean','IntensityMean','IntensitySum','IntensitySum')
-
-
-################
-# Synchronise tc
-################
-
-for(i in 1:length(filenames)) {
-  sync_tc_main(location, paste0(filenames[i], suffix), yaxis.label[i])
+args <- commandArgs(trailingOnly=TRUE)
+if(length(args) == 0) {
+  location.data <- file.path('..', '..', 'data')
+  location.results <- '.'
+  filenames <- c('atg13_int_mean_ctrl', 'atg13_int_mean_wrtm')
+  yaxis.label <- c('IntensityMean', 'IntensityMean')
+  # Synchronise tc  
+  for(i in 1:length(filenames)) {
+    sync_tc_main(location.data, location.results, filenames[i], yaxis.label[i])
+  }
+} else {
+  location.data <- dirname(normalizePath(args[1]))
+  location.results <- SCRIPT_PATH  
+  filename <- sub("^([^.]*).*", "\\1", basename(args[1]))
+  yaxis.label <- args[2]
+  sync_tc_main(location.data, location.results, filename, yaxis.label)
 }
+
 

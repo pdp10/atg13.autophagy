@@ -71,7 +71,7 @@ plot_correlation <- function(df, xlab, ylab) {
 }
 
 
-plot_correlation_main <- function(dfnt, points, xlab, ylab, filenameout) {
+plot_correlation_main <- function(dfnt, points, xlab, ylab, filenameout, location.results) {
   # Correlations for profiles at their initial time point
   time <- data.frame(x=points*10, y=t(dfnt[1,]))
   #print(time)
@@ -80,7 +80,7 @@ plot_correlation_main <- function(dfnt, points, xlab, ylab, filenameout) {
   
   g <- plot_correlation(time, 'time', ylab) + 
     labs(x=xlab, y=ylab)
-  ggsave(paste0(filenameout, "_corr.png"),
+  ggsave(file.path(location.results, paste0(filenameout, "_corr.png")),
          dpi=300,  width=8, height=6)
 }
 
@@ -99,13 +99,13 @@ my_qqplot <- function(vec, line=FALSE) {
   g
 } 
 
-normality_analysis <- function(data, title, filenameout) {
+normality_analysis <- function(data, title, filenameout, location.results) {
   # QQ Plots for initial time points  
   q <- my_qqplot(data, TRUE) + ggtitle(paste0('QQ Plot of ', title))
-  ggsave(paste0(filenameout, "_qqplot_norm.png"), 
+  ggsave(file.path(location.results, paste0(filenameout, "_qqplot_norm.png")), 
          dpi=300,  width=8, height=6)
   q <- my_qqplot(log(data+1), TRUE) + ggtitle(paste0('QQ Plot of log ', title))
-  ggsave(paste0(filenameout, "_qqplot_lognorm.png"), 
+  ggsave(file.path(location.results, paste0(filenameout, "_qqplot_lognorm.png")), 
          dpi=300,  width=8, height=6)
 }
 
@@ -139,7 +139,7 @@ plot_curves2 <-function(df, xlab) {
 }
 
 
-synchronise_timecourse <- function(dfnt, init_offsets_times, latest_peak_time, ylab, location, filenameout) {
+synchronise_timecourse <- function(dfnt, init_offsets_times, latest_peak_time, ylab, location.data, filenameout, location.results) {
   # Calculate the maximum offset (this line will be the synchronised point)
   max_offset <- max(init_offsets_times)
   #print(max_offset)
@@ -179,15 +179,15 @@ synchronise_timecourse <- function(dfnt, init_offsets_times, latest_peak_time, y
     geom_vline(xintercept=(latest_peak_time*10)-10, size=1.5, color="black", linetype="dashed") +    
     #geom_vline(xintercept=0, size=1, color="magenta", linetype="dashed") +
     labs(title=paste0("n=", ncol(sync_df)), x="Time [s]", y=ylab) + 
-  ggsave(paste0(filenameout, ".png"), 
+  ggsave(file.path(location.results, paste0(filenameout, ".png")), 
          dpi=300,  width=8, height=6)
   
-  write.table(sync_df, file=paste0(location, filenameout,"_sync.csv"), sep=",", row.names=FALSE)
+  write.table(sync_df, file=file.path(location.data, paste0(filenameout,"_sync.csv")), sep=",", row.names=FALSE)
   return(sync_df)
 }
 
 
-comp_mean_error <- function(df, ylab, filenameout) {
+comp_mean_error <- function(df, ylab, filenameout, location.results) {
   dfnt <- df[,-1]
   time_vec <- subset(df, select=c('time'))
   
@@ -207,22 +207,22 @@ comp_mean_error <- function(df, ylab, filenameout) {
     geom_line(aes(x=a, y=b), color="black", size=1.0) +
     labs(x="Time [s]", y=ylab) + 
     theme_basic()
-  ggsave(paste0(filenameout, "_sd.png"), dpi=300,  width=8, height=6)
+  ggsave(file.path(location.results, paste0(filenameout, "_sd.png")), dpi=300,  width=8, height=6)
   
   g <- g +     
     geom_errorbar(aes(ymin=b-d, ymax=b+d), colour="magenta") +
     geom_line(aes(x=a, y=b), color="black", size=1.0) + 
     theme_basic()
-  ggsave(paste0(filenameout, "_ci95.png"), dpi=300,  width=8, height=6)
+  ggsave(file.path(location.results, paste0(filenameout, "_ci95.png")), dpi=300,  width=8, height=6)
   
   colnames(statdf) <- c("time", "mean", "sd", "ci95")
-  write.table(statdf, file=paste0(filenameout, "_stats.csv"), sep=",", row.names=FALSE)  
+  write.table(statdf, file=file.path(location.results, paste0(filenameout, "_stats.csv")), sep=",", row.names=FALSE)  
 }
 
 
 
 
-sync_tc_fun <- function(df, location, filenameout, ylab) {
+sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) {
   
   # discard the first column (time)
   dfnt <- df[,-1]
@@ -249,14 +249,14 @@ sync_tc_fun <- function(df, location, filenameout, ylab) {
   #print(init_offsets_intensities)
   
   # calculate correlations and plot
-  plot_correlation_main(dfnt, init_offsets_times, "offsets from 1st signal [s]", ylab, paste0(filenameout, "_offsets_times_vs_intensities"))
-  plot_correlation_main(df_peaks, peak_times, "peak times [s]", ylab, paste0(filenameout, "_peak_times_vs_intensities"))  
+  plot_correlation_main(dfnt, init_offsets_times, "offsets from 1st signal [s]", ylab, paste0(filenameout, "_offsets_times_vs_intensities"), location.results)
+  plot_correlation_main(df_peaks, peak_times, "peak times [s]", ylab, paste0(filenameout, "_peak_times_vs_intensities"), location.results)  
   
   # save correlation data on file
   corr_df <- data.frame(init_offsets_times*10, peak_times*10, t(dfnt[1,]))
   corr_df[,4] <- rownames(corr_df)
   colnames(corr_df) <- c('init_offsets_times', 'peaks_times', paste0(ylab, "_at_t0"), 'repeat_id')
-  write.table(corr_df, file=paste0(filenameout, "_corr.csv"), sep=",", row.names=FALSE)
+  write.table(corr_df, file=file.path(location.results, paste0(filenameout, "_corr.csv")), sep=",", row.names=FALSE)
   # save correlation stats on file
   corr_stats_df <- t(data.frame(mean(init_offsets_times*10), sqrt(var(init_offsets_times*10)), 
                                 skewness(init_offsets_times*10), kurtosis(init_offsets_times*10), 
@@ -282,32 +282,156 @@ sync_tc_fun <- function(df, location, filenameout, ylab) {
                                'peak_times_logspace_mu', 'peak_times_logspace_sd',
                                'init_offsets_intensities_logspace_mu', 'init_offsets_intensities_logspace_sd',
                                'peak_intensities_logspace_mu', 'peak_intensities_logspace_sd')
-  write.table(corr_stats_df, file=paste0(filenameout, "_corr_stats.csv"), sep=",", row.names=TRUE, col.names=FALSE)
+  write.table(corr_stats_df, file=file.path(location.results, paste0(filenameout, "_corr_stats.csv")), sep=",", row.names=TRUE, col.names=FALSE)
   
   
   # check normality and log-normality
-  normality_analysis(init_offsets_times, 'offsets at t=0', paste0(filenameout, "_init_offsets_times"))
-  normality_analysis(peak_times, 'peak times', paste0(filenameout, "_peak_times"))
-  normality_analysis(init_offsets_intensities, 'offsets intensities', paste0(filenameout, "_init_offsets_intensities"))  
-  normality_analysis(peak_intensities, 'peak intensities', paste0(filenameout, "_peak_intensities"))
+  normality_analysis(init_offsets_times, 'offsets at t=0', paste0(filenameout, "_init_offsets_times"), location.results)
+  normality_analysis(peak_times, 'peak times', paste0(filenameout, "_peak_times"), location.results)
+  normality_analysis(init_offsets_intensities, 'offsets intensities', paste0(filenameout, "_init_offsets_intensities"), location.results)  
+  normality_analysis(peak_intensities, 'peak intensities', paste0(filenameout, "_peak_intensities"), location.results)
   
   
   # synchronise the time courses by maximum peak
-  sync_df <- synchronise_timecourse(dfnt, init_offsets_times, latest_peak_time, ylab, location, filenameout)
+  sync_df <- synchronise_timecourse(dfnt, init_offsets_times, latest_peak_time, ylab, location.data, filenameout, location.results)
 
-  comp_mean_error(sync_df, ylab, filenameout)
+  comp_mean_error(sync_df, ylab, filenameout, location.results)
 }
 
 
 
-plot_original_tc <- function(df, filenameout, ylab) {
+plot_original_tc <- function(df, filenameout, ylab, location.results) {
   names(df)[1] <- "time"
   g <- plot_curves(df) + 
     labs(title=paste0("n=", ncol(df)), x="Time [s]", y=ylab)
-  ggsave(paste0(filenameout, "_orig.png"), 
+  ggsave(file.path(location.results, paste0(filenameout, "_orig.png")), 
          dpi=300,  width=8, height=6)
 }
 
 
+sync_tc_main <- function(location.data, location.results, csv.file, readout) {
+  df <- read.table( file.path(location.data, paste0(csv.file, '.csv')), header=TRUE, na.strings="NA", dec=".", sep="," )
+  # remove rows and columns containing only NA
+  df <- df[colSums(!is.na(df)) > 0]
+  filenameout <- paste0(csv.file)
+  # plot original time courses
+  plot_original_tc(df, filenameout, readout, location.results)    
+  # synchronise time courses
+  sync_tc_fun(df, location.data, filenameout, readout, location.results)
+}
 
 
+
+### -------------------- ###
+
+
+# return the upper values of the oscillations (the peaks)
+hv <- function(vec, thres=0.5, ini.tp=0) {
+  vec <- vec[!is.na(vec) & as.numeric(names(vec))>=ini.tp & vec>thres]
+  return(vec)
+}
+
+# return the lower values of the oscillations
+lv <- function(vec, thres=0.5, ini.tp=0) {
+  vec <- vec[!is.na(vec) & as.numeric(names(vec))>=ini.tp & vec<thres]
+  return(vec)  
+}
+
+
+# extract lower and upper values
+extract_min_max <- function(location.data, location.results, filename, thres.hv, thres.lv) {
+  
+  suffix <- '.csv'
+  # import the data
+  data <- read.table( file.path(location.data, paste0(filename, suffix)), header=TRUE, na.strings="NA", dec=".", sep=",", row.names=1)
+  
+  # EXTRACT THE UPPER VALUES
+  
+  # extract the delays from the time courses
+  data.plot.hv <- data.frame(time=numeric(0), val=numeric(0))
+  for(j in 1:ncol(data)) {
+    col.j <- data[,j]
+    names(col.j) <- row.names(data)
+    hv.j <- hv(col.j, thres=thres.hv)
+    hv.tc.j <- as.numeric(names(hv.j))
+    data.plot.hv <- rbind(data.plot.hv, data.frame(time=hv.tc.j, val=hv.j))
+  }
+  data.plot.hv <- cbind(data.plot.hv, pos=rep('top', nrow(data.plot.hv)))
+  
+  # plot
+  g <- ggplot() + 
+    geom_point(data=data.plot.hv, aes(x=time, y=val)) +  
+    labs(title='Upper Values', x='Time [s]', y='Intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(file.path(location.results, paste0(filename, '_upper_values.png')), width=4, height=3, dpi=300)
+  write.table(data.plot.hv, file=file.path(location.results, paste0(filename, '_upper_values', suffix)), row.names=FALSE, quote=FALSE, sep=',')
+  
+  # density plot
+  g <- ggplot(data.plot.hv, aes(x=val)) + 
+    geom_density(colour = "black", fill = "#56B4E9", alpha=0.5) +
+    labs(title='Density of upper values', x='signal intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(file.path(location.results, paste0(filename, '_upper_values_density.png')), width=4, height=3, dpi=300)
+  
+  
+  # EXTRACT THE LOWER VALUES
+  
+  # extract the delays from the time courses
+  data.plot.lv <- data.frame(time=numeric(0), val=numeric(0))
+  for(j in 1:ncol(data)) {
+    col.j <- data[,j]
+    names(col.j) <- row.names(data)
+    lv.j <- lv(col.j, thres=thres.lv)
+    lv.tc.j <- as.numeric(names(lv.j))
+    data.plot.lv <- rbind(data.plot.lv, data.frame(time=lv.tc.j, val=lv.j))
+  }
+  data.plot.lv <- cbind(data.plot.lv, pos=rep('bottom', nrow(data.plot.lv)))
+  
+  # plot
+  g <- ggplot() + 
+    geom_point(data=data.plot.lv, aes(x=time, y=val)) +  
+    labs(title='Lower values', x='Time [s]', y='Intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(file.path(location.results, paste0(filename, '_lower_values.png')), width=4, height=3, dpi=300)
+  write.table(data.plot.lv, file=file.path(location.results, paste0(filename, '_lower_values', suffix)), row.names=FALSE, quote=FALSE, sep=',')
+  
+  # density plot
+  g <- ggplot(data.plot.lv, aes(x=val)) + 
+    geom_density(colour = "black", fill = "#56B4E9", alpha=0.5) +
+    labs(title='Density of lower values', x='signal intensity [a.u.]') +
+    theme_basic(base_size = 16)
+  ggsave(file.path(location.results, paste0(filename, '_lower_values_density.png')), width=4, height=3, dpi=300)
+  
+  
+  # write the peaks stats
+  
+  peaks.stats <- data.frame(type=c('top', 'bottom'), mean=c(mean(data.plot.hv$val), mean(data.plot.lv$val)), 
+                            sd=c(sd(data.plot.hv$val), sd(data.plot.lv$val)))
+  write.table(peaks.stats, file=file.path(location.results, paste0(filename, '_peaks_stats', suffix)), row.names=FALSE, col.names=TRUE, quote=FALSE, sep=',')
+  
+}
+
+
+
+### -------------------- ###
+
+
+# Generate data sets for Copasi
+generate_copasi_datasets <- function(location.data, filename, location.results, filename.out, observable, treatment) {
+  suffix <- '.csv'
+  # DATA READING
+  data <- read.table(file.path(location.data, paste0(filename, suffix)), header=TRUE, na.strings="NA", dec=".", sep=",")
+  
+  # MELT
+  data.copasi <- melt(data, id.vars=c('time'), value.name = observable)
+  data.copasi <- subset(data.copasi, select=-c(variable))
+  if(treatment == FALSE) {
+    data.copasi <- cbind(data.copasi, trtm=rep(0, nrow(data.copasi)))
+  } else {
+    data.copasi <- cbind(data.copasi, trtm=rep(1, nrow(data.copasi)))
+  }
+  
+  # DATA WRITING
+  write.table(data.copasi, file=file.path(location.results, paste0(filename.out, suffix)), sep="\t", na="", dec=".", row.names=FALSE, quote=FALSE)
+  print(paste0('Copasi data set saved in: ', file.path(location.results, paste0(filename.out, suffix))))
+}

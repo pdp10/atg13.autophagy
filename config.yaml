@@ -24,47 +24,11 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-# synchronise time courses by maximum value
 
-
-source('../utilities/plots.R')
-
-
-sync_tc_main <- function(location, csv.file, readout) {
-  print(paste("Parsing", readout))
-  
-  df <- read.table( paste0(location, csv.file, '.csv'), header=TRUE, na.strings="NA", dec=".", sep="," )
-  # remove rows and columns containing only NA
-  df <- df[colSums(!is.na(df)) > 0]
-
-  filenameout <- paste0(csv.file)
-  # plot original time courses
-  plot_original_tc(df, filenameout, readout)    
-  # synchronise time courses
-  sync_tc_fun(df, location, filenameout, readout)
-}
-
-
-
-
-###########
-# LOAD DATA 
-###########
-
-suffix <- '.csv'
-location <- '../data/'
-filenames <- c('atg13_int_mean_ctrl', 'atg13_int_mean_wrtm')
-yaxis.label <- c('IntensityMean','IntensityMean')
-
-# filenames <- c('atg13_int_mean_ctrl', 'atg13_int_mean_wrtm', 'atg1_int_sum_ctrl.csv', 'atg1_int_sum_wrtm.csv')
-# yaxis.label <- c('IntensityMean','IntensityMean','IntensitySum','IntensitySum')
-
-
-################
-# Synchronise tc
-################
-
-for(i in 1:length(filenames)) {
-  sync_tc_main(location, paste0(filenames[i]), yaxis.label[i])
-}
-
+datasets: ['atg13_int_mean_ctrl.csv', 'atg13_int_mean_wrtm.csv']
+thres_lv: [1000, 1000]
+thres_hv: [2000, 1200]
+readout: 'IntensityMean'
+models_dir: '../Models'
+observable: 'ATG13_obs'
+treatment: ['FALSE', 'TRUE']

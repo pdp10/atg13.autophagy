@@ -9,14 +9,10 @@ Data analysis for generic autophagy events targetting ATG13 as readout with and 
 ### Pipeline structure
 
 - data/: data sets for data analysis.
-
-- utilities/: R files containing common functions.
-
-- 1_synchronise_by_maxval/: synchronise the time courses by maximum value. 
-
-- 2_upper_lower_bound_analysis/: extract the upper and lower values.
-
-- 3_time_courses_data_for_copasi/: generate the data sets for parameter estimation using Copasi.
+- scripts/utilities/: R files containing common functions.
+- scripts/1_synchronise_by_maxval/: synchronise the time courses by maximum value. 
+- scripts/2_upper_lower_bound_analysis/: extract the upper and lower values.
+- scripts/3_time_courses_data_for_copasi/: generate the data sets for parameter estimation using Copasi.
 
 
 ### Other folders
@@ -28,21 +24,12 @@ Data analysis for generic autophagy events targetting ATG13 as readout with and 
 ## How to use this pipeline
 
 ### Snakemake
-- clone workflow into working directory
-`git clone https://github.com/pdp10/atg13.autophagy`
-- edit config and workflow as needed
-`emacs config.yaml`
-- install dependencies into isolated environment
-`conda env create -n myworkflow --file environment.yaml`
-- activate environment
-`source activate myworkflow`
-- execute workflow
-`snakemake -n`
+- `git clone https://github.com/pdp10/atg13.autophagy` # clone workflow into working directory
+- `emacs config.yaml` # edit config and workflow as needed
+- `conda env create -n myworkflow --file environment.yaml` # install dependencies into isolated environment
+- `source activate myworkflow` # activate environment
+- `snakemake -s Snakefile  --configfile config.yaml` execute workflow
 
 ### R (directly)
-- Run the whole pipeline
-`cd scripts`
-`Rscript run_all.R`
-- Run single analyses
-`cd scripts/{N_ANALYSIS}/`
-`Rscript {ANALYSIS.R}`
+- `cd scripts ; Rscript run_all.R` # Run the whole pipeline
+- `cd scripts/{N_ANALYSIS}/ ; Rscript {ANALYSIS.R}` # Run single analyses

@@ -24,7 +24,6 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-
 datasets: ['atg13_int_mean_ctrl.csv', 'atg13_int_mean_wrtm.csv']
 thres_lv: [1000, 1000]
 thres_hv: [2000, 1200]

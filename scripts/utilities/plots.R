@@ -25,8 +25,6 @@
 
 
 
-
-
 library(reshape2)
 library(ggplot2)
 library(grid)
@@ -34,9 +32,6 @@ library(gridExtra)
 library(Hmisc)
 library(scales)
 library(plyr)
-library(moments)
-
-
 
 
 # A simple theme without grid
@@ -55,8 +50,21 @@ logspace_mu <- function(mu, sd) {
   log(mu) - 1/2*log((sd/mu)^2+1)
 }
 
+
 logspace_sd <- function(mu, sd) {
   sqrt(log((sd/mu)^2 + 1))
+}
+
+
+skewness <- function(x, na.rm = FALSE, ...) {
+  if (na.rm) x = x[!is.na(x)]
+  return(sum((x-mean(x))^3/length(x))/sqrt(var(x))^3)
+}
+
+
+kurtosis <- function(x, na.rm = FALSE, ...) {
+  if (na.rm) x = x[!is.na(x)]
+  return(sum((x-mean(x))^4/length(x))/sqrt(var(x))^4)
 }
 
 

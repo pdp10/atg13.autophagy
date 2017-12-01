@@ -26,14 +26,12 @@
 
 channels:
  - r
- - conda-forge
 dependencies:
- - r=3.3.1
+ - r=3.3.2
  - r-ggplot2=2.1.0
  - r-reshape2
- - r-grid
- - r-gridExtra
+ - r-gridbase
+ - r-gridextra
  - r-Hmisc
  - r-scales
  - r-plyr
- - r-moments

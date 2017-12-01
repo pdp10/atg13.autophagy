@@ -73,6 +73,12 @@ def get_thres_hv(wildcards):
         return thres_hv[index]
     return 0
 
+def get_treatment(wildcards):
+    wildcards = os.path.splitext(str(wildcards))[0]
+    if wildcards in datasets:
+        index = datasets.index(wildcards)
+        return treatment[index]
+    return 'FALSE'
     
 # ---- RULES ---- #
 
@@ -112,6 +118,6 @@ rule time_courses_data_for_copasi:
         models_dir = models_dir,
         outputfile = "{dataset}" + "_copasi",
         observable = observable,
-        treatment = treatment 
+        treatment = get_treatment
     shell:
         "Rscript scripts/3_time_courses_data_for_copasi/time_courses_data_for_copasi.R {input.file} {params.models_dir} {params.outputfile} {params.observable} {params.treatment}"

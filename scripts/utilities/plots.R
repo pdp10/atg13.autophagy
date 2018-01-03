@@ -89,7 +89,7 @@ plot_correlation_main <- function(dfnt, points, xlab, ylab, filenameout, locatio
   g <- plot_correlation(time, 'time', ylab) + 
     labs(x=xlab, y=ylab)
   ggsave(file.path(location.results, paste0(filenameout, "_corr.png")),
-         dpi=300,  width=8, height=6)
+         dpi=300,  width=6, height=4)
 }
 
 
@@ -109,12 +109,12 @@ my_qqplot <- function(vec, line=FALSE) {
 
 normality_analysis <- function(data, title, filenameout, location.results) {
   # QQ Plots for initial time points  
-  q <- my_qqplot(data, TRUE) + ggtitle(paste0('QQ Plot of ', title))
+  q <- my_qqplot(data, TRUE) + ggtitle(paste0(title))
   ggsave(file.path(location.results, paste0(filenameout, "_qqplot_norm.png")), 
-         dpi=300,  width=8, height=6)
-  q <- my_qqplot(log(data+1), TRUE) + ggtitle(paste0('QQ Plot of log ', title))
+         dpi=300,  width=6, height=4)
+  q <- my_qqplot(log(data+1), TRUE) + ggtitle(paste0('log ', title))
   ggsave(file.path(location.results, paste0(filenameout, "_qqplot_lognorm.png")), 
-         dpi=300,  width=8, height=6)
+         dpi=300,  width=6, height=4)
 }
 
 
@@ -188,7 +188,7 @@ synchronise_timecourse <- function(dfnt, init_offsets_times, latest_peak_time, y
     #geom_vline(xintercept=0, size=1, color="magenta", linetype="dashed") +
     labs(title=paste0("n=", ncol(sync_df)), x="Time [s]", y=ylab) + 
   ggsave(file.path(location.results, paste0(filenameout, ".png")), 
-         dpi=300,  width=8, height=6)
+         dpi=300,  width=6, height=4)
   
   write.table(sync_df, file=file.path(location.data, paste0(filenameout,"_sync.csv")), sep=",", row.names=FALSE)
   return(sync_df)
@@ -215,13 +215,13 @@ comp_mean_error <- function(df, ylab, filenameout, location.results) {
     geom_line(aes(x=a, y=b), color="black", size=1.0) +
     labs(x="Time [s]", y=ylab) + 
     theme_basic()
-  ggsave(file.path(location.results, paste0(filenameout, "_sd.png")), dpi=300,  width=8, height=6)
+  ggsave(file.path(location.results, paste0(filenameout, "_sd.png")), dpi=300,  width=6, height=4)
   
   g <- g +     
     geom_errorbar(aes(ymin=b-d, ymax=b+d), colour="magenta") +
     geom_line(aes(x=a, y=b), color="black", size=1.0) + 
     theme_basic()
-  ggsave(file.path(location.results, paste0(filenameout, "_ci95.png")), dpi=300,  width=8, height=6)
+  ggsave(file.path(location.results, paste0(filenameout, "_ci95.png")), dpi=300,  width=6, height=4)
   
   colnames(statdf) <- c("time", "mean", "sd", "ci95")
   write.table(statdf, file=file.path(location.results, paste0(filenameout, "_stats.csv")), sep=",", row.names=FALSE)  
@@ -257,7 +257,7 @@ sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) 
   #print(init_offsets_intensities)
   
   # calculate correlations and plot
-  plot_correlation_main(dfnt, init_offsets_times, "offsets from 1st signal [s]", ylab, paste0(filenameout, "_offsets_times_vs_intensities"), location.results)
+  plot_correlation_main(dfnt, init_offsets_times, "Init. sign. [s]", ylab, paste0(filenameout, "_offsets_times_vs_intensities"), location.results)
   plot_correlation_main(df_peaks, peak_times, "peak times [s]", ylab, paste0(filenameout, "_peak_times_vs_intensities"), location.results)  
   
   # save correlation data on file
@@ -296,8 +296,8 @@ sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) 
   # check normality and log-normality
   normality_analysis(init_offsets_times, 'offsets at t=0', paste0(filenameout, "_init_offsets_times"), location.results)
   normality_analysis(peak_times, 'peak times', paste0(filenameout, "_peak_times"), location.results)
-  normality_analysis(init_offsets_intensities, 'offsets intensities', paste0(filenameout, "_init_offsets_intensities"), location.results)  
-  normality_analysis(peak_intensities, 'peak intensities', paste0(filenameout, "_peak_intensities"), location.results)
+  normality_analysis(init_offsets_intensities, 'offsets intens.', paste0(filenameout, "_init_offsets_intensities"), location.results)  
+  normality_analysis(peak_intensities, 'peak intens.', paste0(filenameout, "_peak_intensities"), location.results)
   
   
   # synchronise the time courses by maximum peak
@@ -313,7 +313,7 @@ plot_original_tc <- function(df, filenameout, ylab, location.results) {
   g <- plot_curves(df) + 
     labs(title=paste0("n=", ncol(df)), x="Time [s]", y=ylab)
   ggsave(file.path(location.results, paste0(filenameout, "_orig.png")), 
-         dpi=300,  width=8, height=6)
+         dpi=300,  width=6, height=4)
 }
 
 

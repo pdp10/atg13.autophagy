@@ -139,7 +139,7 @@ hist_w_dist <- function(vec) {
   df <- data.frame(x=vec)
   
   g <- ggplot(df, aes(x)) +
-    geom_histogram(aes(y = ..density..), binwidth = 1, color = "black", fill = 'white') +
+    geom_histogram(aes(y = ..density..), bins=length(df$x), color = "black", fill = 'white') +
     stat_function(fun = dnorm, 
                   args = list(mean = mean(df$x), sd = sd(df$x)), 
                   lwd = 1,
@@ -347,6 +347,39 @@ sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) 
   normality_analysis(peak_times, 'peak times', paste0(filenameout, "_peak_times"), location.results)
   normality_analysis(init_offsets_intensities, 'offsets int', paste0(filenameout, "_init_offsets_intensities"), location.results)  
   normality_analysis(peak_intensities, 'peak int', paste0(filenameout, "_peak_intensities"), location.results)
+  
+  
+  #################
+  # Normality tests
+  #################
+  swt <- shapiro.test(init_offsets_times)
+  kt <- kurtosis.test(init_offsets_times)
+  st <- skew.test(init_offsets_times)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_init_offsets_times_normality_tests.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  swt <- shapiro.test(peak_times)
+  kt <- kurtosis.test(peak_times)
+  st <- skew.test(peak_times)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_peak_times_normality_tests.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  swt <- shapiro.test(init_offsets_intensities)
+  kt <- kurtosis.test(init_offsets_intensities)
+  st <- skew.test(init_offsets_intensities)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_init_offsets_intensities_normality_tests.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  swt <- shapiro.test(peak_intensities)
+  kt <- kurtosis.test(peak_intensities)
+  st <- skew.test(peak_intensities)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_peak_intensities_normality_tests.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
   
   
   # synchronise the time courses by maximum peak

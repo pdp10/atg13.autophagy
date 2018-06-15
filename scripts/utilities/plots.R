@@ -286,16 +286,32 @@ sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) 
   colnames(corr_df) <- c('init_offsets_times', 'peaks_times', paste0(ylab, "_at_t0"), 'repeat_id')
   write.table(corr_df, file=file.path(location.results, paste0(filenameout, "_corr.csv")), sep=",", row.names=FALSE)
   # save correlation stats on file
-  corr_stats_df <- t(data.frame(mean(init_offsets_times*10), sqrt(var(init_offsets_times*10)), 
-                                skewness(init_offsets_times*10), kurtosis(init_offsets_times*10), 
-                                mean(peak_times*10), sqrt(var(peak_times*10)),
-                                skewness(peak_times*10), kurtosis(peak_times*10),
+  init_offsets_times.10 <- init_offsets_times*10
+  peak_times.10 <- peak_times*10
+  init_offsets_times.10.log <- log(init_offsets_times.10)
+  peak_times.10.log <- log(peak_times.10)
+  init_offsets_intensities.log <- log(init_offsets_intensities)
+  peak_intensities.log <- log(peak_intensities)
+  corr_stats_df <- t(data.frame(mean(init_offsets_times.10), sqrt(var(init_offsets_times.10)), 
+                                skewness(init_offsets_times.10), kurtosis(init_offsets_times.10), 
+                                mean(peak_times.10), sqrt(var(peak_times.10)),
+                                skewness(peak_times.10), kurtosis(peak_times.10),
                                 mean(init_offsets_intensities), sqrt(var(init_offsets_intensities)),
                                 skewness(init_offsets_intensities), kurtosis(init_offsets_intensities),                                
                                 mean(peak_intensities), sqrt(var(peak_intensities)),
                                 skewness(peak_intensities), kurtosis(peak_intensities),
-                                meanlog(mean(init_offsets_times*10),var(init_offsets_times*10)), sdlog(mean(init_offsets_times*10),var(init_offsets_times*10)), 
-                                meanlog(mean(peak_times*10), var(peak_times*10)), sdlog(mean(peak_times*10),var(peak_times*10)),
+                                # log data
+                                mean(init_offsets_times.10.log), sqrt(var(init_offsets_times.10.log)), 
+                                skewness(init_offsets_times.10.log), kurtosis(init_offsets_times.10.log), 
+                                mean(peak_times.10.log), sqrt(var(peak_times.10.log)),
+                                skewness(peak_times.10.log), kurtosis(peak_times.10.log),
+                                mean(init_offsets_intensities.log), sqrt(var(init_offsets_intensities.log)),
+                                skewness(init_offsets_intensities.log), kurtosis(init_offsets_intensities.log),                                
+                                mean(peak_intensities.log), sqrt(var(peak_intensities.log)),
+                                skewness(peak_intensities.log), kurtosis(peak_intensities.log),
+                                # meanlog, sdlog
+                                meanlog(mean(init_offsets_times.10),var(init_offsets_times.10)), sdlog(mean(init_offsets_times.10),var(init_offsets_times.10)), 
+                                meanlog(mean(peak_times.10), var(peak_times.10)), sdlog(mean(peak_times.10),var(peak_times.10)),
                                 meanlog(mean(init_offsets_intensities), var(init_offsets_intensities)), sdlog(mean(init_offsets_intensities*10),var(init_offsets_intensities)),
                                 meanlog(mean(peak_intensities), var(peak_intensities)), sdlog(mean(peak_intensities),var(peak_intensities))))
   rownames(corr_stats_df) <- c('init_offsets_times_mean', 'init_offsets_times_sd', 
@@ -306,6 +322,16 @@ sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) 
                                'init_offsets_intensities_skew', 'init_offsets_intensities_kurt (excess)',
                                'peak_intensities_mean', 'peak_intensities_sd',
                                'peak_intensities_skew', 'peak_intensities_kurt (excess)',
+                               # log data
+                               'log_init_offsets_times_mean', 'log_init_offsets_times_sd', 
+                               'log_init_offsets_times_skew', 'log_init_offsets_times_kurt (excess)', 
+                               'log_peak_times_mean', 'log_peak_times_sd',
+                               'log_peak_times_skew', 'log_peak_times_kurt (excess)',
+                               'log_init_offsets_intensities_mean', 'log_init_offsets_intensities_sd',
+                               'log_init_offsets_intensities_skew', 'log_init_offsets_intensities_kurt (excess)',
+                               'log_peak_intensities_mean', 'log_peak_intensities_sd',
+                               'log_peak_intensities_skew', 'log_peak_intensities_kurt (excess)',
+                               # meanlog, sdlog
                                'init_offsets_times_meanlog', 'init_offsets_times_sdlog',
                                'peak_times_meanlog', 'peak_times_sdlog',
                                'init_offsets_intensities_meanlog', 'init_offsets_intensities_sdlog',
@@ -322,6 +348,7 @@ sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) 
   #################
   # Normality tests
   #################
+  # original data set
   swt <- shapiro.test(init_offsets_times)
   kt <- kurtosis.test(init_offsets_times)
   st <- skew.test(init_offsets_times)
@@ -349,6 +376,45 @@ sync_tc_fun <- function(df, location.data, filenameout, ylab, location.results) 
   df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
                          pvalue=c(swt$p.value, kt, st))
   write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_peak_intensities_normality_tests.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  ####################################
+  # log data set
+  init_offsets_times.log <- log(init_offsets_times)
+  peak_times.log <- log(peak_times)
+  init_offsets_intensities.log <- log(init_offsets_intensities)
+  peak_intensities.log <- log(peak_intensities)
+  
+  swt <- shapiro.test(init_offsets_times.log)
+  kt <- kurtosis.test(init_offsets_times.log)
+  st <- skew.test(init_offsets_times.log)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_init_offsets_times_normality_tests_log_dataset.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  swt <- shapiro.test(peak_times.log)
+  kt <- kurtosis.test(peak_times.log)
+  st <- skew.test(peak_times.log)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_peak_times_normality_tests_log_dataset.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  swt <- shapiro.test(init_offsets_intensities.log)
+  kt <- kurtosis.test(init_offsets_intensities.log)
+  st <- skew.test(init_offsets_intensities.log)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_init_offsets_intensities_normality_tests_log_dataset.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  swt <- shapiro.test(peak_intensities.log)
+  kt <- kurtosis.test(peak_intensities.log)
+  st <- skew.test(peak_intensities.log)
+  df.stats <- data.frame(test=c('shapiro.test', 'kurtosis.test', 'skew.test'), 
+                         pvalue=c(swt$p.value, kt, st))
+  write.table(df.stats, file=file.path(location.results, paste0(filenameout, '_peak_intensities_normality_tests_log_dataset.csv')), row.names=FALSE, quote=FALSE, sep=',')
+  
+  
+  ####################################
+  
   
   
   # synchronise the time courses by maximum peak
